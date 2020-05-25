@@ -1,3 +1,6 @@
+// alternative way to require dotenv (vs specify in server script in package.json)
+// require("dotenv").config()
+
 const express = require("express")
 const helmet = require("helmet")
 const cors = require("cors")
