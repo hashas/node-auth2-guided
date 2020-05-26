@@ -43,20 +43,25 @@ router.post("/login", async (req, res, next) => {
 			return res.status(401).json(authError)
 		}
 
+		// this becomes useless as we're no longer using sessions
+		
 		// creates a new session for the user and saves it in memory.
 		// it's this easy since we're using `express-session`
 		// req.session.user = user
 
 		const tokenPayload = {
 			userID: user.id,
-			userRole: "normal", // this would normally come from the database
+			userRole: "admin", // this would normally come from the database
 		}
 
-		const token = jwt.sign(tokenPayload, process.env.JWT_SECRET)
-
+		// we don't have to use cookies in the context of sessions, can be used on their
+		// own to store data and send data from the client
+		res.cookie("token", jwt.sign(tokenPayload, process.env.JWT_SECRET))
 		res.json({
 			message: `Welcome ${user.username}!`,
-			token: token,
+			// lets comment this out and use a cookie above to send the token back
+			// instead as part of response body
+			// token: jwt.sign(tokenPayload, process.env.JWT_SECRET),
 		})
 
 	} catch(err) {
@@ -64,19 +69,21 @@ router.post("/login", async (req, res, next) => {
 	}
 })
 
-router.get("/logout", restrict(), (req, res, next) => {
-	// this will delete the session in the database and try to expire the cookie,
-	// though it's ultimately up to the client if they delete the cookie or not.
-	// but it becomes useless to them once the session is deleted server-side.
-	req.session.destroy((err) => {
-		if (err) {
-			next(err)
-		} else {
-			res.json({
-				message: "Logged out",
-			})
-		}
-	})
-})
+// this endpoint becomes useless as we're no longer using sessions
+
+// router.get("/logout", restrict(), (req, res, next) => {
+// 	// this will delete the session in the database and try to expire the cookie,
+// 	// though it's ultimately up to the client if they delete the cookie or not.
+// 	// but it becomes useless to them once the session is deleted server-side.
+// 	req.session.destroy((err) => {
+// 		if (err) {
+// 			next(err)
+// 		} else {
+// 			res.json({
+// 				message: "Logged out",
+// 			})
+// 		}
+// 	})
+// })
 
 module.exports = router

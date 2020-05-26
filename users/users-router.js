@@ -5,7 +5,8 @@ const restrict = require("../middleware/restrict")
 const router = express.Router()
 
 // This endpoint is only available to logged-in users due to the `restrict` middleware
-router.get("/", restrict(), async (req, res, next) => {
+// Furthermore we want to restrict this endpoint to only "admin"
+router.get("/", restrict("admin"), async (req, res, next) => {
 	try {
 		res.json(await Users.find())
 	} catch(err) {
@@ -13,4 +14,4 @@ router.get("/", restrict(), async (req, res, next) => {
 	}
 })
 
-module.exports = router
+module.exports = router 

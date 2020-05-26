@@ -1,7 +1,8 @@
 // install jwt library
 const jwt = require("jsonwebtoken")
 
-function restrict() {
+// if "role" is not specified then default to "normal"
+function restrict(role = "normal") {
 	return async (req, res, next) => {
 		const authError = {
 			message: "Invalid credentials",
@@ -14,16 +15,27 @@ function restrict() {
 			// 	return res.status(401).json(authError)
 			// }
 
-			const token = req.headers.authorization
+			console.log(req.headers)
+
+			// headers are not case-sensitive i.e. "Authorization" will work in header
+			// const token = req.headers.authorization
+
+			// comment-out above and use cookies instead
+			const token = req.cookies.token
 
 			if (!token) {
+				// you must "return" from the request if sending a response early
+				// (with an error, for example), otherwise it'll try to send another
+				// response after one was already sent
 				return res.status(401).json(authError)
 			}
-
+			
 			// check jwt signature received from client with our secret key
-			jwt.verify(token, process.env.JWT_SECRET), (err, decodedPayload) => {
+			jwt.verify(token, process.env.JWT_SECRET, (err, decodedPayload) => {
 				// if the err is NOT empty then assume the user is NOT authenticated
-				if (err) {
+				// Further, compare the 'role' in the function to the 'role' in decoded
+				// payload
+				if (err || decodedPayload.userRole !== role) {
 					return res.status(401).json(authError)
 				}
 
@@ -34,9 +46,11 @@ function restrict() {
 				req.token = decodedPayload
 				// and then we move on
 				next()
-			}
+			})
+			
 		} catch(err) {
 			next(err)
+			
 		}
 	}
 }
